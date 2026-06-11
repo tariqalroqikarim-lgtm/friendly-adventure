@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بلانر المحتوى</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f4f0;color:#1a1a1a;min-height:100vh;padding:1.5rem 1rem}
+h1{font-size:20px;font-weight:600;margin-bottom:4px;color:#1a1a1a}
+.subtitle{font-size:13px;color:#888;margin-bottom:1.25rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.stat-card{background:#fff;border-radius:10px;padding:.75rem;text-align:center;border:1px solid #e8e6e0}
+.stat-n{font-size:24px;font-weight:600;color:#1a1a1a}
+.stat-l{font-size:11px;color:#888;margin-top:2px}
+.tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+.tab{padding:6px 14px;border-radius:20px;border:1px solid #d5d3ce;font-size:13px;cursor:pointer;background:#fff;color:#666;transition:.15s}
+.tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.week-label{font-size:13px;color:#666;margin-bottom:.75rem;font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:1.25rem}
+.day-col{display:flex;flex-direction:column;gap:5px}
+.day-header{font-size:10px;font-weight:600;color:#888;text-align:center;padding:4px 2px;border-bottom:1px solid #e8e6e0;line-height:1.5}
+.slot{border-radius:8px;border:1px dashed #d5d3ce;padding:5px 3px;min-height:60px;cursor:pointer;transition:.15s;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;color:#aaa;text-align:center}
+.slot:hover{border-color:#999;background:#fafaf8}
+.slot.has-post{border-style:solid;border-color:transparent}
+.slot.published{opacity:.65}
+.platform-badge{font-size:9px;font-weight:600;padding:2px 5px;border-radius:6px;letter-spacing:.3px}
+.insta{background:#dbeafe;color:#1e40af}
+.whatsapp{background:#dcfce7;color:#166534}
+.snap{background:#fef9c3;color:#854d0e}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.dot-pending{background:#ccc}
+.dot-mine{background:#3b82f6}
+.dot-hers{background:#ec4899}
+.dot-done{background:#22c55e}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem;padding:10px 12px;background:#fff;border-radius:10px;border:1px solid #e8e6e0}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#666}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:1.25rem;width:310px;max-width:92vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.modal h3{font-size:16px;font-weight:600;color:#1a1a1a}
+.modal label{font-size:12px;color:#666;display:block;margin-bottom:4px;font-weight:500}
+.modal select,.modal input{width:100%;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #d5d3ce;background:#fff;color:#1a1a1a;outline:none}
+.modal select:focus,.modal input:focus{border-color:#1a1a1a}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;align-items:center}
+.btn-cancel{background:transparent;border:1px solid #d5d3ce;color:#666;padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer}
+.btn-save{background:#1a1a1a;border:none;color:#fff;padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500}
+.btn-del{background:transparent;border:1px solid #fca5a5;color:#dc2626;padding:7px 12px;border-radius:8px;font-size:12px;cursor:pointer;margin-right:auto}
+.post-note{font-size:9px;color:#888;text-align:center;overflow:hidden;max-height:24px;line-height:1.3;padding:0 2px}
+.done-badge{font-size:9px;color:#22c55e;font-weight:600}
+@media(max-width:500px){
+  .grid{grid-template-columns:repeat(7,1fr)}
+  .day-header{font-size:9px}
+  .slot{min-height:52px;padding:3px 2px}
+}
+</style>
+</head>
+<body>
+<h1>📅 بلانر المحتوى</h1>
+<p class="subtitle">خططي نشراتك مع زميلتك بسهولة</p>
+
+<div class="stats">
+  <div class="stat-card"><div class="stat-n" id="s-total">0</div><div class="stat-l">إجمالي البوستات</div></div>
+  <div class="stat-card"><div class="stat-n" id="s-mine">0</div><div class="stat-l" id="name-mine-label">بوستاتي</div></div>
+  <div class="stat-card"><div class="stat-n" id="s-hers">0</div><div class="stat-l" id="name-hers-label">بوستات زميلتي</div></div>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><span class="status-dot dot-pending"></span> مخطط</div>
+  <div class="leg-item"><span class="status-dot dot-mine"></span> أنا بنشر</div>
+  <div class="leg-item"><span class="status-dot dot-hers"></span> هي بتنشر</div>
+  <div class="leg-item"><span class="status-dot dot-done"></span> اتنشر ✓</div>
+  <div class="leg-item"><span class="platform-badge insta">ريلز</span></div>
+  <div class="leg-item"><span class="platform-badge whatsapp">ستوري</span></div>
+  <div class="leg-item"><span class="platform-badge snap">سناب</span></div>
+</div>
+
+<div class="tabs" id="week-tabs"></div>
+<div class="week-label" id="week-label"></div>
+<div class="grid" id="cal-grid"></div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3 id="modal-title">إضافة بوست</h3>
+    <div>
+      <label>المنصة</label>
+      <select id="m-platform">
+        <option value="insta">📱 انستجرام ريلز</option>
+        <option value="whatsapp">💬 ستوري واتساب</option>
+        <option value="snap">👻 سناب شات</option>
+      </select>
+    </div>
+    <div>
+      <label>مين بينشر؟</label>
+      <select id="m-who">
+        <option value="mine">أنا</option>
+        <option value="hers">زميلتي</option>
+      </select>
+    </div>
+    <div>
+      <label>موضوع البوست (اختياري)</label>
+      <input type="text" id="m-note" placeholder="مثلاً: إعلان منتج جديد">
+    </div>
+    <div>
+      <label>الحالة</label>
+      <select id="m-status">
+        <option value="pending">🕐 مخطط</option>
+        <option value="done">✅ اتنشر</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-del" id="btn-del" style="display:none">🗑 حذف</button>
+      <button class="btn-cancel" id="btn-cancel">إلغاء</button>
+      <button class="btn-save" id="btn-save">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+let posts=JSON.parse(localStorage.getItem('cp_posts_v2')||'{}');
+let currentWeek=0;
+let editing=null;
+
+function save(){try{localStorage.setItem('cp_posts_v2',JSON.stringify(posts))}catch(e){}}
+
+function getWeekStart(offset){
+  const d=new Date();
+  const sun=new Date(d);
+  sun.setDate(d.getDate()-d.getDay()+offset*7);
+  sun.setHours(0,0,0,0);
+  return sun;
+}
+
+function dateKey(date){return date.toISOString().split('T')[0]}
+
+function fmt(d){return d.getDate()+'/'+(d.getMonth()+1)}
+
+function renderTabs(){
+  const el=document.getElementById('week-tabs');
+  el.innerHTML='';
+  for(let w=0;w<5;w++){
+    const ws=getWeekStart(w);
+    const we=new Date(ws);we.setDate(ws.getDate()+6);
+    const label=w===0?'هذا الأسبوع':w===1?'الأسبوع الجاي':'بعد '+(w)+' أسابيع';
+    const btn=document.createElement('button');
+    btn.className='tab'+(currentWeek===w?' active':'');
+    btn.textContent=label;
+    btn.onclick=()=>{currentWeek=w;renderTabs();renderGrid()};
+    el.appendChild(btn);
+  }
+  const ws=getWeekStart(currentWeek);
+  const we=new Date(ws);we.setDate(ws.getDate()+6);
+  document.getElementById('week-label').textContent=fmt(ws)+' — '+fmt(we);
+}
+
+function renderGrid(){
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+  const ws=getWeekStart(currentWeek);
+  let total=0,mine=0,hers=0;
+
+  for(let d=0;d<7;d++){
+    const date=new Date(ws);date.setDate(ws.getDate()+d);
+    const key=dateKey(date);
+    const col=document.createElement('div');
+    col.className='day-col';
+
+    const hdr=document.createElement('div');
+    hdr.className='day-header';
+    hdr.innerHTML=DAYS[date.getDay()].slice(0,3)+'<br>'+fmt(date);
+    col.appendChild(hdr);
+
+    const dayPosts=posts[key]||[];
+    dayPosts.forEach((p,i)=>{
+      total++;
+      if(p.who==='mine')mine++;
+      else hers++;
+      col.appendChild(makeSlot(p,key,i));
+    });
+
+    const add=document.createElement('div');
+    add.className='slot';
+    add.innerHTML='<span style="font-size:18px;color:#ccc">+</span>';
+    add.title='إضافة بوست';
+    add.onclick=()=>openModal(key,null,null);
+    col.appendChild(add);
+    grid.appendChild(col);
+  }
+
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-mine').textContent=mine;
+  document.getElementById('s-hers').textContent=hers;
+}
+
+function platInfo(p){
+  if(p==='insta')return{cls:'insta',txt:'ريلز',bg:'#eff6ff'};
+  if(p==='whatsapp')return{cls:'whatsapp',txt:'ستوري',bg:'#f0fdf4'};
+  return{cls:'snap',txt:'سناب',bg:'#fefce8'};
+}
+
+function makeSlot(p,key,i){
+  const slot=document.createElement('div');
+  const pl=platInfo(p.platform);
+  const dotCls=p.status==='done'?'dot-done':p.who==='mine'?'dot-mine':'dot-hers';
+  slot.className='slot has-post'+(p.status==='done'?' published':'');
+  slot.style.background=p.status==='done'?'#f9f9f7':p.who==='mine'?'#eff6ff':'#fdf2f8';
+  slot.style.borderColor=p.status==='done'?'#e5e5e0':p.who==='mine'?'#bfdbfe':'#fbcfe8';
+  slot.innerHTML=`<span class="status-dot ${dotCls}"></span><span class="platform-badge ${pl.cls}">${pl.txt}</span>`+
+    (p.note?`<span class="post-note">${p.note}</span>`:'')+
+    (p.status==='done'?'<span class="done-badge">✓ نشر</span>':'');
+  slot.onclick=()=>openModal(key,i,p);
+  return slot;
+}
+
+function openModal(key,idx,post){
+  editing={key,idx};
+  document.getElementById('modal-title').textContent=idx===null?'إضافة بوست':'تعديل البوست';
+  document.getElementById('m-platform').value=post?post.platform:'insta';
+  document.getElementById('m-who').value=post?post.who:'mine';
+  document.getElementById('m-note').value=post?post.note:'';
+  document.getElementById('m-status').value=post?post.status:'pending';
+  document.getElementById('btn-del').style.display=idx!==null?'flex':'none';
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+document.getElementById('btn-cancel').onclick=()=>document.getElementById('modal-bg').classList.remove('open');
+document.getElementById('modal-bg').onclick=e=>{if(e.target.id==='modal-bg')document.getElementById('modal-bg').classList.remove('open')};
+
+document.getElementById('btn-save').onclick=()=>{
+  const{key,idx}=editing;
+  if(!posts[key])posts[key]=[];
+  const p={
+    platform:document.getElementById('m-platform').value,
+    who:document.getElementById('m-who').value,
+    note:document.getElementById('m-note').value,
+    status:document.getElementById('m-status').value
+  };
+  if(idx===null)posts[key].push(p);
+  else posts[key][idx]=p;
+  save();
+  document.getElementById('modal-bg').classList.remove('open');
+  renderGrid();
+};
+
+document.getElementById('btn-del').onclick=()=>{
+  const{key,idx}=editing;
+  posts[key].splice(idx,1);
+  if(!posts[key].length)delete posts[key];
+  save();
+  document.getElementById('modal-bg').classList.remove('open');
+  renderGrid();
+};
+
+renderTabs();
+renderGrid();
+</script>
+</body>
+</html>
